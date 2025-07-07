@@ -23,6 +23,10 @@ flutter:
     - assets/animations/cloudy.json
     - assets/animations/rainy.json
     - assets/animations/wind.json
+    - assets/animations/foggy.json
+    - assets/animations/drizzle.json
+    - assets/animations/snowy.json
+    - assets/animations/thunderstorm.json
     - assets/images/background.jpg
     - assets/images/search.png
   fonts:
