@@ -1,6 +1,10 @@
 <h1 align="center">
   ☁️ Flutter Weather App
 </h1>
+<p align="center">
+  <img src="assets/screenshots/weather.gif" width="300" alt="News Animated Header" />
+</p>
+
 
 <p align="center">
   <img src="https://img.shields.io/badge/Flutter-3.22-blue?logo=flutter&logoColor=white" />
