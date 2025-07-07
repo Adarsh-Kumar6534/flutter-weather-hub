@@ -1,0 +1,33 @@
+name: we
+description: A Flutter weather app
+version: 1.0.0+1
+
+environment:
+  sdk: '^3.4.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  lottie: ^3.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  assets:
+    - assets/animations/loading.json
+    - assets/animations/sunny.json
+    - assets/animations/humidity.json
+    - assets/animations/cloudy.json
+    - assets/animations/rainy.json
+    - assets/animations/wind.json
+    - assets/images/background.jpg
+    - assets/images/search.png
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
