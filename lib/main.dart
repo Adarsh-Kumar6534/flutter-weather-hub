@@ -279,15 +279,15 @@ class _WeatherScreenState extends State<WeatherScreen> with TickerProviderStateM
     final coords = _cityCoordinates[cityMatch]!;
     try {
       final url = Uri.parse(
-        'https://api.open-meteo.com/v1/forecast?latitude=${coords['latitude']}&longitude=${coords['longitude']}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max&timezone=auto',
+        'https://api.open-meteo.com/v1/forecast?latitude=${coords['latitude']}&longitude=${coords['longitude']}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,weathercode&timezone=auto',
       );
-      print('API Request URL: $url'); // Log the full URL
+      print('API Request URL: $url');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Full API Response: $data'); // Log full response
-        print('Weather code for $city: ${data['current_weather']['weathercode']}'); // Corrected to weathercode
+        print('Full API Response: $data');
+        print('Weather code for $city: ${data['current_weather']['weathercode']}');
         setState(() {
           _weatherData = data;
           _isLoading = false;
@@ -325,21 +325,42 @@ class _WeatherScreenState extends State<WeatherScreen> with TickerProviderStateM
     }
     switch (weatherCode) {
       case 0:
-        return 'assets/animations/sunny.json';
+        return 'assets/animations/sunny.json'; // Clear sky
       case 1:
       case 2:
       case 3:
-        return 'assets/animations/cloudy.json';
+        return 'assets/animations/cloudy.json'; // Mainly clear, partly cloudy, overcast
+      case 45:
+      case 48:
+        return 'assets/animations/foggy.json'; // Fog, depositing rime fog
+      case 51:
+      case 53:
+      case 55:
+      case 56:
+      case 57:
+        return 'assets/animations/drizzle.json'; // Drizzle
       case 61:
       case 63:
       case 65:
       case 66:
       case 67:
-        return 'assets/animations/rainy.json';
+        return 'assets/animations/rainy.json'; // Rain
+      case 71:
+      case 73:
+      case 75:
+      case 77:
+        return 'assets/animations/snowy.json'; // Snow
       case 80:
       case 81:
       case 82:
-        return 'assets/animations/rainy.json';
+        return 'assets/animations/rainy.json'; // Showers
+      case 85:
+      case 86:
+        return 'assets/animations/snowy.json'; // Snow showers
+      case 95:
+      case 96:
+      case 99:
+        return 'assets/animations/thunderstorm.json'; // Thunderstorm
       default:
         print('Unknown weatherCode $weatherCode, defaulting to wind.json');
         return 'assets/animations/wind.json';
@@ -348,9 +369,9 @@ class _WeatherScreenState extends State<WeatherScreen> with TickerProviderStateM
 
   String _getLocationDate() {
     if (_weatherData == null || _weatherData!['daily'] == null || _weatherData!['daily']['time'].isEmpty) {
-      return DateTime.now().toLocal().toString().split(' ')[0]; // Fallback to current date
+      return DateTime.now().toLocal().toString().split(' ')[0];
     }
-    return _weatherData!['daily']['time'][0]; // Use API's daily date
+    return _weatherData!['daily']['time'][0];
   }
 
   @override
@@ -404,10 +425,10 @@ class _WeatherScreenState extends State<WeatherScreen> with TickerProviderStateM
                                           controller: _cityController,
                                           decoration: const InputDecoration(
                                             hintText: 'Enter city (e.g., London)',
-                                            prefixIcon: const Image(
+                                            prefixIcon: Image(
                                               image: AssetImage('assets/images/search.png'),
-                                              width: 6,
-                                              height: 6,
+                                              width: 24,
+                                              height: 24,
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -459,95 +480,142 @@ class _WeatherScreenState extends State<WeatherScreen> with TickerProviderStateM
                                 ),
                                 const SizedBox(height: 20),
                                 Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Temperature',
-                                              value: '${_weatherData!['current_weather']['temperature']}°C',
-                                              color: Colors.blue[300]!,
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Temperature',
+                                                value: '${_weatherData!['current_weather']['temperature']}°C',
+                                                color: Colors.blue[300]!,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Humidity',
-                                              value: '${_weatherData!['hourly']['relative_humidity_2m'][0]}%',
-                                              color: Colors.teal[300]!,
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Humidity',
+                                                value: '${_weatherData!['hourly']['relative_humidity_2m'][0]}%',
+                                                color: Colors.teal[300]!,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Wind Speed',
-                                              value: '${_weatherData!['current_weather']['windspeed']} km/h',
-                                              color: Colors.orange[300]!,
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Wind Speed',
+                                                value: '${_weatherData!['current_weather']['windspeed']} km/h',
+                                                color: Colors.orange[300]!,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Max Temp',
-                                              value: '${_weatherData!['daily']['temperature_2m_max'][0]}°C',
-                                              color: Colors.red[300]!,
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Max Temp',
+                                                value: '${_weatherData!['daily']['temperature_2m_max'][0]}°C',
+                                                color: Colors.red[300]!,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Min Temp',
-                                              value: '${_weatherData!['daily']['temperature_2m_min'][0]}°C',
-                                              color: Colors.blueGrey[300]!,
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Min Temp',
+                                                value: '${_weatherData!['daily']['temperature_2m_min'][0]}°C',
+                                                color: Colors.blueGrey[300]!,
+                                              ),
                                             ),
-                                          ),
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Sunrise',
-                                              value: _weatherData!['daily']['sunrise'][0],
-                                              color: Colors.yellow[300]!,
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Sunrise',
+                                                value: _weatherData!['daily']['sunrise'][0],
+                                                color: Colors.yellow[300]!,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Sunset',
-                                              value: _weatherData!['daily']['sunset'][0],
-                                              color: Colors.deepPurple[300]!,
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Sunset',
+                                                value: _weatherData!['daily']['sunset'][0],
+                                                color: Colors.deepPurple[300]!,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Precipitation',
-                                              value: '${_weatherData!['daily']['precipitation_sum'][0]} mm',
-                                              color: Colors.cyan[300]!,
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Precipitation',
+                                                value: '${_weatherData!['daily']['precipitation_sum'][0]} mm',
+                                                color: Colors.cyan[300]!,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: WeatherCard(
-                                              title: 'Precip Prob',
-                                              value: '${_weatherData!['daily']['precipitation_probability_max'][0]}%',
-                                              color: Colors.indigo[300]!,
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: WeatherCard(
+                                                title: 'Precip Prob',
+                                                value: '${_weatherData!['daily']['precipitation_probability_max'][0]}%',
+                                                color: Colors.indigo[300]!,
+                                              ),
                                             ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 20),
+                                        const Text(
+                                          '7-Day Forecast',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
                                           ),
-                                        ],
-                                      ),
-                                    ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        _weatherData != null
+                                            ? Column(
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      for (int index = 0; index < 4; index++)
+                                                        Expanded(
+                                                          child: ForecastCard(
+                                                            date: DateTime.parse(_weatherData!['daily']['time'][index]),
+                                                            weatherCode: _weatherData!['daily']['weathercode'][index],
+                                                            maxTemp: _weatherData!['daily']['temperature_2m_max'][index],
+                                                            minTemp: _weatherData!['daily']['temperature_2m_min'][index],
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      for (int index = 4; index < 7; index++)
+                                                        Expanded(
+                                                          child: ForecastCard(
+                                                            date: DateTime.parse(_weatherData!['daily']['time'][index]),
+                                                            weatherCode: _weatherData!['daily']['weathercode'][index],
+                                                            maxTemp: _weatherData!['daily']['temperature_2m_max'][index],
+                                                            minTemp: _weatherData!['daily']['temperature_2m_min'][index],
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              )
+                                            : const Center(child: CircularProgressIndicator()),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -565,12 +633,14 @@ class WeatherCard extends StatefulWidget {
   final String title;
   final String value;
   final Color color;
+  final String? lottiePath;
 
   const WeatherCard({
     Key? key,
     required this.title,
     required this.value,
     required this.color,
+    this.lottiePath,
   }) : super(key: key);
 
   @override
@@ -604,17 +674,122 @@ class _WeatherCardState extends State<WeatherCard> {
         ),
         transform: Matrix4.identity()..scale(_isHovered ? 1.05 : 1.0),
         child: GlassCard(
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16.0),
-            title: Text(
-              widget.title,
-              style: TextStyle(color: Colors.white70, fontSize: 18),
-            ),
-            trailing: Text(
-              widget.value,
-              style: TextStyle(color: widget.color, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16.0),
+                  title: Text(
+                    widget.title,
+                    style: TextStyle(color: Colors.white70, fontSize: 18),
+                  ),
+                  subtitle: Text(
+                    widget.value,
+                    style: TextStyle(color: widget.color, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              if (widget.lottiePath != null)
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: Lottie.asset(widget.lottiePath!, animate: true),
+                ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ForecastCard extends StatelessWidget {
+  final DateTime date;
+  final int weatherCode;
+  final double maxTemp;
+  final double minTemp;
+
+  const ForecastCard({
+    Key? key,
+    required this.date,
+    required this.weatherCode,
+    required this.maxTemp,
+    required this.minTemp,
+  }) : super(key: key);
+
+  String _getWeatherAnimation(int weatherCode) {
+    switch (weatherCode) {
+      case 0:
+        return 'assets/animations/sunny.json'; // Clear sky
+      case 1:
+      case 2:
+      case 3:
+        return 'assets/animations/cloudy.json'; // Mainly clear, partly cloudy, overcast
+      case 45:
+      case 48:
+        return 'assets/animations/foggy.json'; // Fog, depositing rime fog
+      case 51:
+      case 53:
+      case 55:
+      case 56:
+      case 57:
+        return 'assets/animations/drizzle.json'; // Drizzle
+      case 61:
+      case 63:
+      case 65:
+      case 66:
+      case 67:
+        return 'assets/animations/rainy.json'; // Rain
+      case 71:
+      case 73:
+      case 75:
+      case 77:
+        return 'assets/animations/snowy.json'; // Snow
+      case 80:
+      case 81:
+      case 82:
+        return 'assets/animations/rainy.json'; // Showers
+      case 85:
+      case 86:
+        return 'assets/animations/snowy.json'; // Snow showers
+      case 95:
+      case 96:
+      case 99:
+        return 'assets/animations/thunderstorm.json'; // Thunderstorm
+      default:
+        return 'assets/animations/wind.json';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: GlassCard(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 80,
+              child: Lottie.asset(
+                _getWeatherAnimation(weatherCode),
+                animate: true,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${date.day}/${date.month}/${date.year}',
+              style: const TextStyle(color: Colors.white70, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              'Max: ${maxTemp.toStringAsFixed(1)}°C  Min: ${minTemp.toStringAsFixed(1)}°C',
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -759,7 +934,6 @@ class _SkyButtonState extends State<SkyButton> with TickerProviderStateMixin {
 }
 
 class ParticlePainter extends CustomPainter {
-  final DateTime _now = DateTime.now();
   final List<Offset> _particles = List.generate(
     20,
     (index) => Offset(
@@ -775,12 +949,10 @@ class ParticlePainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     for (var particle in _particles) {
-      final newX = particle.dx + math.sin(_now.millisecond / 500.0) * 2;
-      final newY = particle.dy + math.cos(_now.millisecond / 500.0) * 2;
-      canvas.drawCircle(Offset(newX, newY), 2.0, paint);
+      canvas.drawCircle(particle, 2.0, paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
