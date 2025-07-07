@@ -36,7 +36,8 @@ This sleek and modern **Flutter Weather App** displays real-time weather updates
 ## 📸 UI Preview
 
 <p align="center">
-  <img src="assets/screenshots/home.png" width="300"/>
+  <img src="assets/screenshots/login.png" width="300"/>
+  <img src="assets/screenshots/home1.png" width="300"/>
   <img src="assets/screenshots/details.png" width="300"/>
 </p>
 
